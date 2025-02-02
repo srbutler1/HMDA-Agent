@@ -1,0 +1,21 @@
+# Core Dependencies
+streamlit==1.28.2
+pandas==2.1.3
+numpy==1.26.2
+requests==2.31.0
+python-dotenv==1.0.0
+
+# Data Analysis and Visualization
+scikit-learn==1.3.2
+matplotlib==3.8.2
+seaborn==0.13.0
+plotly==5.18.0
+
+# Database
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+
+# Testing and Code Quality
+pytest==7.4.3
+black==23.11.0
+flake8==6.1.0
