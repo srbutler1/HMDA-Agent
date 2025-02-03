@@ -34,6 +34,10 @@ def main():
         researcher_interface()
 
 def customer_interface():
+    # Initialize session state for form inputs
+    if 'form_submitted' not in st.session_state:
+        st.session_state.form_submitted = False
+    
     st.header("Loan Qualification Assistant")
     st.write("""
     This tool helps you understand what types of loans you may qualify for based on:
@@ -57,34 +61,76 @@ def customer_interface():
             "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
             "DC"  # Including District of Columbia
         ]
-        state = st.selectbox("State", states)
+        
+        # Use session state to store form values
+        if 'state' not in st.session_state:
+            st.session_state.state = "Select State"
+        if 'city' not in st.session_state:
+            st.session_state.city = ""
+        if 'annual_income' not in st.session_state:
+            st.session_state.annual_income = 0
+        if 'credit_score' not in st.session_state:
+            st.session_state.credit_score = 650
+        if 'monthly_debt' not in st.session_state:
+            st.session_state.monthly_debt = 0
+        if 'property_type' not in st.session_state:
+            st.session_state.property_type = "Single Family"
+        if 'property_value' not in st.session_state:
+            st.session_state.property_value = 0
+        if 'down_payment' not in st.session_state:
+            st.session_state.down_payment = 0
+        if 'loan_purpose' not in st.session_state:
+            st.session_state.loan_purpose = "Home Purchase"
+            
+        def update_state(key, value):
+            st.session_state[key] = value
+            st.session_state.form_submitted = False
+            
+        state = st.selectbox("State", states, key="state_select", 
+                           on_change=update_state, args=("state",))
         if state != "Select State":
-            city = st.text_input("City")
+            city = st.text_input("City", key="city_input",
+                               on_change=update_state, args=("city",))
             
         # Financial Information
         st.subheader("Financial Information")
-        annual_income = st.number_input("Annual Income ($)", min_value=0, value=0, step=1000)
-        credit_score = st.slider("Credit Score", 300, 850, 650)
-        monthly_debt = st.number_input("Monthly Debt Payments ($)", min_value=0, value=0, step=100)
+        annual_income = st.number_input("Annual Income ($)", min_value=0, value=st.session_state.annual_income, 
+                                      step=1000, on_change=update_state, args=("annual_income",))
+        credit_score = st.slider("Credit Score", 300, 850, st.session_state.credit_score,
+                               on_change=update_state, args=("credit_score",))
+        monthly_debt = st.number_input("Monthly Debt Payments ($)", min_value=0, 
+                                     value=st.session_state.monthly_debt, step=100,
+                                     on_change=update_state, args=("monthly_debt",))
 
     with col2:
         # Property Information
         st.subheader("Property Information")
         property_type = st.selectbox(
             "Property Type",
-            ["Single Family", "Multi-Family", "Manufactured Home"]
+            ["Single Family", "Multi-Family", "Manufactured Home"],
+            key="property_type_select",
+            on_change=update_state, args=("property_type",)
         )
-        property_value = st.number_input("Estimated Property Value ($)", min_value=0, value=0, step=1000)
-        down_payment = st.number_input("Down Payment ($)", min_value=0, value=0, step=1000)
+        property_value = st.number_input("Estimated Property Value ($)", min_value=0, 
+                                       value=st.session_state.property_value, step=1000,
+                                       on_change=update_state, args=("property_value",))
+        down_payment = st.number_input("Down Payment ($)", min_value=0, 
+                                     value=st.session_state.down_payment, step=1000,
+                                     on_change=update_state, args=("down_payment",))
         
         # Loan Information
         st.subheader("Loan Information")
         loan_purpose = st.selectbox(
             "Loan Purpose",
-            ["Home Purchase", "Refinancing", "Home Improvement"]
+            ["Home Purchase", "Refinancing", "Home Improvement"],
+            key="loan_purpose_select",
+            on_change=update_state, args=("loan_purpose",)
         )
     
     if st.button("Analyze Qualification"):
+        st.session_state.form_submitted = True
+        
+    if st.session_state.form_submitted:
         if state != "Select State" and city and annual_income > 0 and property_value > 0:
             analyze_qualification(
                 state, city, annual_income, credit_score, monthly_debt,
@@ -110,7 +156,7 @@ def researcher_interface():
     with col1:
         # Data Selection
         st.subheader("Data Selection")
-        year = st.selectbox("Select Year", range(2024, 2017, -1))
+        year = st.selectbox("Select Year", range(2023, 2017, -1))
         # All US states for research interface
         states = [
             "All States", "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
@@ -232,9 +278,13 @@ def analyze_qualification(
     """Analyze loan qualification and provide recommendations"""
     st.info("Analyzing loan qualification...")
     
-    # Get recent loan data for analysis
-    loan_data = hmda_api.get_loan_data(2024, state)
-    
+    # Use most recent available year (2023) for loan qualification analysis
+    try:
+        loan_data = hmda_api.get_loan_data(2023, state)
+    except Exception as e:
+        st.error(f"Error fetching loan data: {str(e)}")
+        return
+        
     if loan_data.empty:
         st.error("Unable to fetch loan data for analysis")
         return

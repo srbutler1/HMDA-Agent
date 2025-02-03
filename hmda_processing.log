@@ -4,3 +4,26 @@
 2025-02-02 15:44:23,208 - ERROR - Error loading census data: [Errno 2] No such file or directory: 'data/CensusFlatFile2024.csv'
 2025-02-02 15:44:23,510 - ERROR - Error loading census data: [Errno 2] No such file or directory: 'data/CensusFlatFile2024.csv'
 2025-02-02 15:44:33,240 - ERROR - Error loading census data: [Errno 2] No such file or directory: 'data/CensusFlatFile2024.csv'
+2025-02-02 16:22:56,947 - ERROR - Error loading census data: [Errno 2] No such file or directory: 'data/CensusFlatFile2024.csv'
+2025-02-02 16:23:21,230 - ERROR - Error loading census data: [Errno 2] No such file or directory: 'data/CensusFlatFile2024.csv'
+2025-02-02 16:23:27,990 - ERROR - Error loading census data: [Errno 2] No such file or directory: 'data/CensusFlatFile2024.csv'
+2025-02-02 16:31:48,382 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 16:33:26,552 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 16:34:47,479 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 16:36:10,279 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 16:36:47,524 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 19:00:58,960 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 19:01:24,385 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 19:02:01,908 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 19:03:47,094 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 19:05:17,047 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 19:05:31,159 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 19:05:40,270 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 19:06:05,328 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 19:06:09,286 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 19:06:11,335 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 19:06:14,168 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 19:06:24,168 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 19:06:33,505 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 19:06:43,783 - INFO - Successfully loaded census data with 87275 records
+2025-02-02 19:06:50,387 - INFO - Successfully loaded census data with 87275 records

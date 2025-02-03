@@ -4,113 +4,114 @@ A multi-agent system for analyzing Home Mortgage Disclosure Act (HMDA) data and 
 
 ## Overview
 
-This project consists of two main components:
+This project uses a Streamlit-based interface to analyze HMDA (Home Mortgage Disclosure Act) data, integrating census information and loan data to provide insights into lending patterns and market analysis.
 
-1. **Customer-Facing Agent**
-   - Helps users understand what types of loans they may qualify for in their region
-   - Integrates HMDA data with regional census information
-   - Provides personalized recommendations based on user inputs
+## System Architecture
 
-2. **Research Analysis Agent**
-   - Enables researchers to analyze HMDA data
-   - Provides tools for data visualization and statistical analysis
-   - Supports custom queries and data export
-
-## Data Sources
-
-- HMDA Data: Retrieved from FFIEC API (https://ffiec.cfpb.gov/v2/data-browser-api/view/csv)
-- Census Data: Local integration of census flat files
-- MSA/Regional Data: FFIEC census and demographic information
+```mermaid
+graph TD
+    subgraph User Interface
+        A[Streamlit App] --> B[Data Processor]
+    end
+    
+    subgraph Data Processing
+        B --> C[Census Analyzer]
+        B --> D[Loan Analyzer]
+        B --> E[HMDA API Client]
+    end
+    
+    subgraph External Data
+        F[(Census Data)] --> C
+        G[FFIEC HMDA API] --> E
+    end
+    
+    subgraph Analysis
+        C --> H[Demographics Analysis]
+        D --> I[Loan Pattern Analysis]
+        E --> J[Real-time HMDA Data]
+    end
+    
+    H --> A
+    I --> A
+    J --> A
+```
 
 ## Project Structure
 
 ```
 .
-├── agents/                 # Agent implementations
-│   ├── customer/          # Customer-facing agent
-│   └── research/          # Research analysis agent
-├── data/                  # Data processing scripts and cached data
-│   ├── census/           # Census data processing
-│   ├── hmda/             # HMDA data integration
-│   └── cache/            # Cached API responses
-├── api/                   # API implementations
-├── web/                   # Web interface
-├── tests/                # Test suites
-├── docs/                 # Documentation
-└── docker/               # Docker configuration
+├── src/                   # Source code
+│   ├── app.py            # Streamlit application
+│   ├── utils/            # Utility modules
+│   │   ├── census_analyzer.py    # Census data analysis
+│   │   ├── data_processor.py     # Data processing
+│   │   ├── hmda_api.py          # HMDA API client
+│   │   └── loan_analyzer.py      # Loan analysis
+│   └── pages/            # Streamlit pages
+├── data/                 # Data files
+│   ├── cache/           # Cached API responses
+│   └── CensusFlatFile2024.csv  # Census data file
+├── docker/              # Docker configuration
+└── tests/              # Test suites
 ```
+
+## Data Sources
+
+- HMDA Data: Retrieved from FFIEC API (https://ffiec.cfpb.gov/v2/data-browser-api/view/csv)
+- Census Data: Local integration of census flat files (CensusFlatFile2024.csv)
+- MSA/Regional Data: FFIEC census and demographic information
 
 ## Requirements
 
-- Python 3.8+
-- Node.js 18+
-- Docker
-- PostgreSQL 13+
+- Python 3.11+
+- Required Python packages (see requirements.txt)
 
 ## Installation
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/hmda-agent.git
-cd hmda-agent
-```
-
-2. Create and activate a virtual environment:
+1. Create and activate a virtual environment:
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: .\venv\Scripts\activate
 ```
 
-3. Install Python dependencies:
+2. Install Python dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Install Node.js dependencies:
-```bash
-cd web
-npm install
-```
-
-5. Configure environment variables:
+3. Configure environment variables:
 ```bash
 cp .env.example .env
 # Edit .env with your configuration
 ```
 
-6. Start the development environment:
+4. Download the required census data file:
+- Download the FFIEC Census flat file
+- Save it as `data/CensusFlatFile2024.csv`
+
+## Running the Application
+
+Start the Streamlit app:
 ```bash
-docker-compose up -d
+streamlit run src/app.py
 ```
 
-## Development
-
-1. Start the API server:
-```bash
-python api/main.py
-```
-
-2. Start the web interface:
-```bash
-cd web
-npm start
-```
-
-3. Run tests:
-```bash
-pytest tests/
-```
+The application will be available at http://localhost:8501
 
 ## Docker Deployment
 
-Build and run the containers:
+Build and run using Docker:
 ```bash
 docker-compose up --build
 ```
 
-## API Documentation
+## Features
 
-The API documentation is available at `/docs` when running the server.
+- Census data analysis
+- HMDA loan pattern analysis
+- Market assessment tools
+- Demographic insights
+- Real-time HMDA data integration
 
 ## Contributing
 
