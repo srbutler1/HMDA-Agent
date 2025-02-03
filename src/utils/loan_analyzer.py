@@ -10,6 +10,7 @@ class LoanAnalyzer:
     def __init__(self):
         self.data_processor = DataProcessor()
         self.census_data = self._load_census_data()
+        self.msa_data = self._load_msa_data()
         self.loan_type_map = {
             1: "Conventional",
             2: "FHA",
@@ -37,6 +38,64 @@ class LoanAnalyzer:
         except Exception as e:
             print(f"Error loading census data: {e}")
             return pd.DataFrame()
+
+    def _load_msa_data(self) -> Dict[str, str]:
+        """Load MSA data from file and create city-state to MSA code mapping"""
+        try:
+            with open('msa07inc.htm', 'r') as f:
+                content = f.read()
+                
+            # Extract MSA data from the HTML table
+            msa_mapping = {}
+            
+            # Split into lines and process each line
+            lines = content.split('\n')
+            for line in lines:
+                if '<td class=xl25>' in line and '</td>' in line:
+                    # Extract city-state text
+                    city_state = line.split('<td class=xl25>')[1].split('</td>')[0].strip()
+                    
+                    # Get the corresponding MSA code from previous line
+                    prev_line = lines[lines.index(line) - 1]
+                    if 'x:num>' in prev_line:
+                        msa_code = prev_line.split('x:num>')[1].split('</td>')[0].strip()
+                        
+                        if city_state and msa_code and not city_state.startswith('nonmetro'):
+                            # Split into city and state
+                            if ',' in city_state:
+                                city, state = city_state.rsplit(',', 1)
+                                city = city.strip()
+                                state = state.strip()
+                                
+                                # Create normalized key for lookup
+                                key = f"{city.upper()}, {state}"
+                                msa_mapping[key] = msa_code
+            
+            return msa_mapping
+        except Exception as e:
+            print(f"Error loading MSA data: {e}")
+            return {}
+
+    def _get_msa_code(self, city: str, state: str) -> Optional[str]:
+        """Get MSA code for given city and state"""
+        # Normalize the city name and create lookup key
+        city = city.strip().upper()
+        state = state.strip().upper()
+        
+        # Try exact match first
+        key = f"{city}, {state}"
+        if key in self.msa_data:
+            return self.msa_data[key]
+            
+        # Try partial matches
+        for msa_key, code in self.msa_data.items():
+            if state in msa_key and any(
+                city in part.strip() 
+                for part in msa_key.split('-')
+            ):
+                return code
+                
+        return None
 
     def _get_ffiec_income_level(self, tract_mfi_percent: float) -> str:
         """
@@ -175,46 +234,28 @@ class LoanAnalyzer:
         loan_amount: float,
         income: float,
         property_type: str,
-        census_tract: str,
-        msa_code: Optional[str] = None,
-        year: Optional[int] = None
+        city: str,
+        state: str
     ) -> Dict:
         """
-        Analyze qualification factors based on similar applications and FFIEC data
+        Analyze qualification factors based on similar applications
         
         Args:
             data: HMDA loan application data
             loan_amount: Requested loan amount
             income: Annual income
             property_type: Type of property
-            census_tract: Census tract identifier
-            msa_code: Optional MSA code to filter by
+            city: City name
+            state: State code
             
         Returns:
             Dictionary containing qualification analysis
         """
+        # Get MSA code for the city/state
+        msa_code = self._get_msa_code(city, state)
         if msa_code:
             data = data[data["derived_msa-md"] == msa_code]
             
-        # Determine which census dataset to use
-        if year and not self.historical_census_data.empty:
-            census_subset = self.historical_census_data[
-                (self.historical_census_data["census_tract"] == census_tract) &
-                (self.historical_census_data["year"] == year)
-            ]
-            if census_subset.empty:
-                return {}
-            census_data = census_subset.iloc[0]
-        else:
-            if self.current_census_data.empty:
-                return {}
-            census_data = self.current_census_data[
-                self.current_census_data["census_tract"] == census_tract
-            ].iloc[0]
-        
-        tract_mfi_percent = census_data["tract_to_msa_income_percentage"]
-        tract_income_level = self._get_ffiec_income_level(tract_mfi_percent)
-        
         # Filter for similar loan amounts (±20%)
         amount_lower = loan_amount * 0.8
         amount_upper = loan_amount * 1.2
@@ -247,36 +288,13 @@ class LoanAnalyzer:
         approved_loans = similar_props[similar_props["action_taken"] == 1]
         typical_dti = approved_loans["debt_to_income_ratio"].median()
         
-        # Calculate FFIEC-based metrics
-        tract_median_income = census_data["ffiec_msa_md_median_family_income"]
-        income_ratio = income / tract_median_income
-        
-        # Analyze housing market factors
-        housing_factors = {
-            "owner_occupied_rate": (
-                census_data["tract_owner_occupied_units"] / 
-                census_data["tract_total_housing_units"]
-            ),
-            "vacancy_rate": (
-                census_data["tract_vacant_units"] / 
-                census_data["tract_total_housing_units"]
-            ),
-            "median_home_age": census_data["tract_median_age_of_housing_units"],
-            "single_family_pct": (
-                census_data["tract_one_to_four_family_homes"] / 
-                census_data["tract_total_housing_units"]
-            )
-        }
-        
         return {
             "similar_applications_count": len(similar_props),
             "approval_rate": approval_rate,
             "typical_dti_ratio": typical_dti,
             "median_loan_amount": similar_props["loan_amount"].median(),
             "median_income": similar_props["income"].median(),
-            "tract_income_level": tract_income_level,
-            "income_to_tract_median_ratio": income_ratio,
-            "housing_market_factors": housing_factors
+            "msa_code": msa_code
         }
 
     def analyze_market_trends(

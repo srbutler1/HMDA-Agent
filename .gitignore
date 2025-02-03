@@ -1,2 +1,10 @@
 .env
 CensusFlatFile2024.csv
+
+# Top-level documentation files
+/2023Guide_HMDA.pdf
+/Data Browser API _ HMDA Documentation.html
+/FFIEC Census 2020 Info Sheet.html
+/FFIEC_Census_File_Definitions_16JULY24.pdf
+/HMDA Data Collection and Reporting_ Keys to an Effective Program.html
+/Public HMDA - LAR Data Fields _ HMDA Documentation.pdf

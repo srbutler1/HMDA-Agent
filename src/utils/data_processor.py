@@ -249,8 +249,19 @@ class DataProcessor:
         city: str
     ) -> Dict:
         """Get statistics for the local market"""
-        # Filter for the city if possible
-        city_data = loan_data[loan_data["derived_msa-md"].notna()]
+        # Filter for the city
+        city_data = loan_data[
+            loan_data["derived_msa-md"].notna() &
+            loan_data["applicant_city_name"].str.lower() == city.lower()
+        ]
+        
+        # If no city data found, return overall statistics
+        if len(city_data) == 0:
+            return {
+                "median_loan_amount": loan_data["loan_amount"].median(),
+                "median_income": loan_data["income"].median(),
+                "approval_rate": (loan_data["action_taken"] == 1).mean()
+            }
         
         return {
             "median_loan_amount": city_data["loan_amount"].median(),

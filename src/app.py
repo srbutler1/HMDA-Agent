@@ -82,25 +82,27 @@ def customer_interface():
         if 'loan_purpose' not in st.session_state:
             st.session_state.loan_purpose = "Home Purchase"
             
-        def update_state(key, value):
-            st.session_state[key] = value
-            st.session_state.form_submitted = False
+        def update_state(key):
+            def callback():
+                st.session_state[key] = st.session_state[f"{key}_input"]
+                st.session_state.form_submitted = False
+            return callback
             
-        state = st.selectbox("State", states, key="state_select", 
-                           on_change=update_state, args=("state",))
+        state = st.selectbox("State", states, key="state_input", 
+                           on_change=update_state("state"))
         if state != "Select State":
             city = st.text_input("City", key="city_input",
-                               on_change=update_state, args=("city",))
+                               on_change=update_state("city"))
             
         # Financial Information
         st.subheader("Financial Information")
         annual_income = st.number_input("Annual Income ($)", min_value=0, value=st.session_state.annual_income, 
-                                      step=1000, on_change=update_state, args=("annual_income",))
+                                      step=1000, key="annual_income_input", on_change=update_state("annual_income"))
         credit_score = st.slider("Credit Score", 300, 850, st.session_state.credit_score,
-                               on_change=update_state, args=("credit_score",))
+                               key="credit_score_input", on_change=update_state("credit_score"))
         monthly_debt = st.number_input("Monthly Debt Payments ($)", min_value=0, 
                                      value=st.session_state.monthly_debt, step=100,
-                                     on_change=update_state, args=("monthly_debt",))
+                                     key="monthly_debt_input", on_change=update_state("monthly_debt"))
 
     with col2:
         # Property Information
@@ -108,23 +110,23 @@ def customer_interface():
         property_type = st.selectbox(
             "Property Type",
             ["Single Family", "Multi-Family", "Manufactured Home"],
-            key="property_type_select",
-            on_change=update_state, args=("property_type",)
+            key="property_type_input",
+            on_change=update_state("property_type")
         )
         property_value = st.number_input("Estimated Property Value ($)", min_value=0, 
                                        value=st.session_state.property_value, step=1000,
-                                       on_change=update_state, args=("property_value",))
+                                       key="property_value_input", on_change=update_state("property_value"))
         down_payment = st.number_input("Down Payment ($)", min_value=0, 
                                      value=st.session_state.down_payment, step=1000,
-                                     on_change=update_state, args=("down_payment",))
+                                     key="down_payment_input", on_change=update_state("down_payment"))
         
         # Loan Information
         st.subheader("Loan Information")
         loan_purpose = st.selectbox(
             "Loan Purpose",
             ["Home Purchase", "Refinancing", "Home Improvement"],
-            key="loan_purpose_select",
-            on_change=update_state, args=("loan_purpose",)
+            key="loan_purpose_input",
+            on_change=update_state("loan_purpose")
         )
     
     if st.button("Analyze Qualification"):
@@ -299,7 +301,9 @@ def analyze_qualification(
         loan_data,
         loan_amount,
         income,
-        property_type
+        property_type,
+        city,
+        state
     )
     
     # Get market assessment
